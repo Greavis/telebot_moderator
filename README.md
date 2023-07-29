@@ -1,6 +1,6 @@
 # Телеграм-бот для Модерации Чата
 
-![GitHub Stars](https://img.shields.io/github/stars/your_username/your_repo.svg?style=flat&label=Stars&maxAge=2592000)
+![GitHub Stars](https://img.shields.io/github/stars/Greavis/telebot_moderator.svg?style=flat&label=Stars&maxAge=2592000)
 
 Данный телеграм-бот представляет собой инструмент для модерации чата, который позволяет управлять пользователями с помощью опросов. Бот создает опросы для бана, мута, смены тайтла пользователя и создания инвайта на одного пользователя. Модераторы чата могут принимать решения на основе результатов опросов и выполнять соответствующие действия.
 
