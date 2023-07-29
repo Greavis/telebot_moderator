@@ -5,11 +5,12 @@ import time
 TOKEN = 'YOUR_TOKEN'
 bot = AsyncTeleBot(TOKEN)
 
-myGroupID = 0000000 # group ID
+MY_CHAT_ID = 0000000 # group ID
+POLL_TIME = 600 # polling timeout in seconds
 
 async def add_commands():
     await bot.delete_my_commands()
-    scope_chat = BotCommandScopeChat(myGroupID)
+    scope_chat = BotCommandScopeChat(MY_CHAT_ID)
     commands = [
             BotCommand('role', 'Смена роли'),
             BotCommand('invite', 'Добавить'),
@@ -38,7 +39,7 @@ class PollBot:
         self.warns_to_user = []
 
     async def close_poll(self):
-        # await bot.stop_poll(myGroupID, self.current_poll.id)
+        # await bot.stop_poll(MY_CHAT_ID, self.current_poll.id)
         await bot.reply_to(self.current_poll, 'Опрос закрыт')
         self.current_poll = {}
         self.poll_active = False
@@ -55,40 +56,40 @@ class PollBot:
     async def create_poll(self, type, message):
         if type == 'ban':
             self.poll_active = True
-            await bot.delete_message(myGroupID, message.id)
-            self.current_poll = await bot.send_poll(myGroupID, f'Изгнать пользователя {message.reply_to_message.from_user.first_name}', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=600)
-            await asyncio.sleep(600)
+            await bot.delete_message(MY_CHAT_ID, message.id)
+            self.current_poll = await bot.send_poll(MY_CHAT_ID, f'Изгнать пользователя {message.reply_to_message.from_user.first_name}', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=POLL_TIME)
+            await asyncio.sleep(POLL_TIME)
             await self.close_poll()
         elif type == 'invite':
             self.poll_active = True
-            await bot.delete_message(myGroupID, message.id)
-            self.current_poll = await bot.send_poll(myGroupID, f'{message.from_user.first_name} хочет добавить нового пользователя, добавим ?', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=600)
-            await asyncio.sleep(600)
+            await bot.delete_message(MY_CHAT_ID, message.id)
+            self.current_poll = await bot.send_poll(MY_CHAT_ID, f'{message.from_user.first_name} хочет добавить нового пользователя, добавим ?', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=POLL_TIME)
+            await asyncio.sleep(POLL_TIME)
             await self.close_poll()
         elif type == 'mute':
             self.poll_active = True
             self.temp_mute_user_id = message.reply_to_message.from_user.id
             self.temp_mute_timeout = message.text.replace('/mute ', '')
             self.temp_user = message.reply_to_message.from_user.first_name
-            await bot.delete_message(myGroupID, message.id)
-            self.current_poll = await bot.send_poll(myGroupID, f'Мут пользователя {message.reply_to_message.from_user.first_name} на {self.temp_mute_timeout} минут.', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=600)
-            await asyncio.sleep(600)
+            await bot.delete_message(MY_CHAT_ID, message.id)
+            self.current_poll = await bot.send_poll(MY_CHAT_ID, f'Мут пользователя {message.reply_to_message.from_user.first_name} на {self.temp_mute_timeout} минут.', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=POLL_TIME)
+            await asyncio.sleep(POLL_TIME)
             await self.close_poll()
         elif type == 'title_change':
             self.poll_active = True
             self.username = message.reply_to_message.from_user.first_name
             self.changing_user_id = message.reply_to_message.from_user.id
             self.current_role = message.text.replace('/role ', '').strip()
-            await bot.delete_message(myGroupID, message.id)
-            self.current_poll = await bot.send_poll(myGroupID, f'{self.username} претендует на титул {self.current_role}', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=600)
-            await asyncio.sleep(600)
+            await bot.delete_message(MY_CHAT_ID, message.id)
+            self.current_poll = await bot.send_poll(MY_CHAT_ID, f'{self.username} претендует на титул {self.current_role}', ['👍🏻', '👎🏻'], is_anonymous=False, open_period=POLL_TIME)
+            await asyncio.sleep(POLL_TIME)
             await self.close_poll()
     async def invite(self):
-        link = await bot.create_chat_invite_link(myGroupID, name='Приглашение', member_limit=1)
-        await bot.send_message(myGroupID, link.invite_link)
+        link = await bot.create_chat_invite_link(MY_CHAT_ID, name='Приглашение', member_limit=1)
+        await bot.send_message(MY_CHAT_ID, link.invite_link)
 
     async def ban(self):
-        await bot.promote_chat_member(myGroupID, self.changing_user_id, 
+        await bot.promote_chat_member(MY_CHAT_ID, self.changing_user_id, 
                                 False,
                                 False,
                                 False,
@@ -99,7 +100,7 @@ class PollBot:
                                 False,
                                 False,
                                 False)
-        await bot.ban_chat_member(myGroupID, self.changing_user_id)
+        await bot.ban_chat_member(MY_CHAT_ID, self.changing_user_id)
 
     async def mute(self):
         self.muted_user_ids.append(self.temp_mute_user_id)
@@ -112,7 +113,7 @@ class PollBot:
     async def title_change(self):
         role = self.current_role
         user_id = self.changing_user_id
-        await bot.promote_chat_member(myGroupID, user_id, 
+        await bot.promote_chat_member(MY_CHAT_ID, user_id, 
                                 False,
                                 False,
                                 False,
@@ -123,8 +124,8 @@ class PollBot:
                                 False,
                                 False,
                                 True)
-        await bot.set_chat_administrator_custom_title(myGroupID, user_id, role)
-        await bot.send_message(myGroupID, f'{poll_manager.username} теперь имеет титул {poll_manager.current_role}.', disable_notification=True)
+        await bot.set_chat_administrator_custom_title(MY_CHAT_ID, user_id, role)
+        await bot.send_message(MY_CHAT_ID, f'{poll_manager.username} теперь имеет титул {poll_manager.current_role}.', disable_notification=True)
 
 poll_manager = PollBot()
 
@@ -146,7 +147,7 @@ async def handle_poll(a):
         
         
         yes_votes = 0
-        count_users = await bot.get_chat_members_count(myGroupID)
+        count_users = await bot.get_chat_members_count(MY_CHAT_ID)
         if len(poll_manager.votes) > 0:
             for vote in poll_manager.votes:
                 if vote['vote'] == 'yes':
@@ -225,23 +226,23 @@ async def mute_msg(message):
     if poll_manager.mute_timeout[muted_user_position] - time.time() > 0:
         user_mute_time = (poll_manager.mute_timeout[muted_user_position] - time.time()) / 60
         minutes = convert_to_minuts(user_mute_time)
-        await bot.delete_message(myGroupID, message.id)
+        await bot.delete_message(MY_CHAT_ID, message.id)
         print(poll_manager.warn_user_timers[muted_user_position] - time.time())
         if poll_manager.warn_user_timers[muted_user_position] - time.time() > -5 and poll_manager.warns_to_user[muted_user_position] == 0:
-            await bot.send_message(myGroupID, f'{poll_manager.muted_users[muted_user_position]} вы получаете предупреждение, в муте не надо шуметь. Ещё два предупреждения и будете удалены из чата. Оставшееся время ({minutes}) минут')
+            await bot.send_message(MY_CHAT_ID, f'{poll_manager.muted_users[muted_user_position]} вы получаете предупреждение, в муте не надо шуметь. Ещё два предупреждения и будете удалены из чата. Оставшееся время ({minutes}) минут')
             poll_manager.warn_user_timers[muted_user_position] = time.time()
             poll_manager.warns_to_user[muted_user_position] = 1
         elif poll_manager.warn_user_timers[muted_user_position] - time.time() > -5 and poll_manager.warns_to_user[muted_user_position] == 1:
-            await bot.send_message(myGroupID, f'{poll_manager.muted_users[muted_user_position]}..😕 осталось последнее и будете удалены из чата. Оставшееся время ({minutes}) минут')
+            await bot.send_message(MY_CHAT_ID, f'{poll_manager.muted_users[muted_user_position]}..😕 осталось последнее и будете удалены из чата. Оставшееся время ({minutes}) минут')
             poll_manager.warn_user_timers[muted_user_position] = time.time()
             poll_manager.warns_to_user[muted_user_position] = 2
         elif poll_manager.warn_user_timers[muted_user_position] - time.time() > -5 and poll_manager.warns_to_user[muted_user_position] == 2:
-            await bot.send_message(myGroupID, f'{poll_manager.muted_users[muted_user_position]}... Оставшееся время ({minutes}) минут')
+            await bot.send_message(MY_CHAT_ID, f'{poll_manager.muted_users[muted_user_position]}... Оставшееся время ({minutes}) минут')
             poll_manager.warn_user_timers[muted_user_position] = time.time()
             poll_manager.warns_to_user[muted_user_position] = 3
         elif poll_manager.warn_user_timers[muted_user_position] - time.time() > -5 and poll_manager.warns_to_user[muted_user_position] == 3:
-            await bot.send_message(myGroupID, f'{poll_manager.muted_users[muted_user_position]} наверное было время подумать, как минимум 15 секунд ')
-            await bot.ban_chat_member(myGroupID, poll_manager.muted_user_ids[muted_user_position])
+            await bot.send_message(MY_CHAT_ID, f'{poll_manager.muted_users[muted_user_position]} наверное было время подумать, как минимум 15 секунд ')
+            await bot.ban_chat_member(MY_CHAT_ID, poll_manager.muted_user_ids[muted_user_position])
             poll_manager.muted_users.pop(muted_user_position)
             poll_manager.mute_timeout.pop(muted_user_position)
             poll_manager.muted_user_ids.pop(muted_user_position)
@@ -250,7 +251,7 @@ async def mute_msg(message):
         else:
             poll_manager.warn_user_timers[muted_user_position] = time.time()
     else:
-        await bot.send_message(myGroupID, f'Мут с {poll_manager.muted_users[muted_user_position]} снят. Не повторяйте ошибок 😊')
+        await bot.send_message(MY_CHAT_ID, f'Мут с {poll_manager.muted_users[muted_user_position]} снят. Не повторяйте ошибок 😊')
         poll_manager.muted_users.pop(muted_user_position)
         poll_manager.mute_timeout.pop(muted_user_position)
         poll_manager.muted_user_ids.pop(muted_user_position)
