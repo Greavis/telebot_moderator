@@ -42,7 +42,7 @@
 
 ## Автор
 
-Александр Вяткин - [https://t.me/leavemealonefuckingscripts](https://github.com/Greavis)
+Александр Вяткин - [GitHub](https://github.com/Greavis), [Telegram](https://t.me/leavemealonefuckingscripts)
 
 ## Лицензия
 
